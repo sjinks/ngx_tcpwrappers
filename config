@@ -1,0 +1,4 @@
+ngx_addon_name=ngx_tcpwrappers_module
+HTTP_MODULES="$HTTP_MODULES ngx_tcpwrappers_module"
+CORE_LIBS="$CORE_LIBS -lwrap"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/ngx_tcpwrappers.c"
