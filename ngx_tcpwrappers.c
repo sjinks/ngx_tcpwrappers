@@ -5,16 +5,8 @@
  *      Author: Vladimir Kolesnikov <vladimir@extrememember.com>
  */
 
-#include <ngx_config.h>
-#include <ngx_core.h>
 #include <ngx_http.h>
-#include <stddef.h>
-
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <sys/syslog.h>
+#include <ngx_inet.h>
 #include <tcpd.h>
 
 /**
@@ -186,7 +178,13 @@ static ngx_int_t ngx_http_tcpwrappers_handler(ngx_http_request_t* r)
 		return NGX_DECLINED;
 	}
 
-	if (AF_INET != r->connection->sockaddr->sa_family) {
+	if (
+			AF_INET != r->connection->sockaddr->sa_family
+#if (NGX_HAVE_INET6)
+			&& AF_INET6 != r->connection->sockaddr->sa_family
+#endif
+		)
+	{
 		return NGX_DECLINED;
 	}
 
@@ -199,10 +197,11 @@ static ngx_int_t ngx_http_tcpwrappers_handler(ngx_http_request_t* r)
 	}
 	else {
 		char* client_addr = STRING_UNKNOWN;
-		char addr[INET_ADDRSTRLEN];
-		struct sockaddr_in* sin = (struct sockaddr_in*)r->connection->sockaddr;
+		char addr[NGX_INET6_ADDRSTRLEN+1];
+		size_t len = ngx_sock_ntop(r->connection->sockaddr, addr, NGX_INET6_ADDRSTRLEN, 0);
 
-		if (NULL != inet_ntop(AF_INET, &sin->sin_addr, addr, INET_ADDRSTRLEN)) {
+		if (len) {
+			addr[len]   = '\0';
 			client_addr = addr;
 		}
 
