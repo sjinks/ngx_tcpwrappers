@@ -18,7 +18,7 @@
 #include <tcpd.h>
 
 /**
- * @brief Daemon name for libwrap
+ * @brief Default daemon name for libwrap
  */
 #define NGX_TCPWRAPPERS_DAEMON "nginx"
 
@@ -91,6 +91,7 @@ static int my_hosts_access(char* daemon, ngx_connection_t* conn)
 typedef struct {
 	ngx_flag_t enabled;    /**< tcpwrappers on */
 	ngx_flag_t thorough;   /**< tcpwrappers_thorough on */
+	ngx_str_t daemon;      /**< tcpwrappers_daemon */
 } ngx_http_tcpwrappers_conf_t;
 
 static ngx_int_t ngx_http_tcpwrappers_handler(ngx_http_request_t* r);
@@ -116,6 +117,14 @@ static ngx_command_t ngx_http_tcpwrappers_commands[] = {
 		ngx_conf_set_flag_slot,
 		NGX_HTTP_LOC_CONF_OFFSET,
 		offsetof(ngx_http_tcpwrappers_conf_t, thorough),
+		NULL
+	},
+	{
+		ngx_string("tcpwrappers_daemon"),
+		NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_HTTP_LMT_CONF | NGX_CONF_TAKE1,
+		ngx_conf_set_str_slot,
+		NGX_HTTP_LOC_CONF_OFFSET,
+		offsetof(ngx_http_tcpwrappers_conf_t, daemon),
 		NULL
 	},
 	ngx_null_command
@@ -168,8 +177,9 @@ static ngx_int_t ngx_http_tcpwrappers_handler(ngx_http_request_t* r)
 {
 	ngx_http_tcpwrappers_conf_t* config = ngx_http_get_module_loc_conf(r, ngx_tcpwrappers_module);
 	int res;
+	char* daemon_name;
 
-	if (1 != config->enabled) {
+	if (1 != config->enabled || !config->daemon.len) {
 		return NGX_DECLINED;
 	}
 
@@ -177,8 +187,12 @@ static ngx_int_t ngx_http_tcpwrappers_handler(ngx_http_request_t* r)
 		return NGX_DECLINED;
 	}
 
+	daemon_name = (char*)alloca(config->daemon.len + 1);
+	memcpy(daemon_name, config->daemon.data, config->daemon.len);
+	daemon_name[config->daemon.len] = '\0';
+
 	if (1 == config->thorough) {
-		res = my_hosts_access(NGX_TCPWRAPPERS_DAEMON, r->connection);
+		res = my_hosts_access(daemon_name, r->connection);
 	}
 	else {
 		char* client_addr = STRING_UNKNOWN;
@@ -189,7 +203,7 @@ static ngx_int_t ngx_http_tcpwrappers_handler(ngx_http_request_t* r)
 			client_addr = addr;
 		}
 
-		res = my_hosts_ctl(NGX_TCPWRAPPERS_DAEMON, client_addr);
+		res = my_hosts_ctl(daemon_name, client_addr);
 	}
 
 	if (!res) {
@@ -248,6 +262,7 @@ static void* ngx_http_tcpwrappers_create_loc_conf(ngx_conf_t* cf)
 	if (NULL != conf) {
 		conf->enabled  = NGX_CONF_UNSET;
 		conf->thorough = NGX_CONF_UNSET;
+		ngx_str_null(&conf->daemon);
 	}
 
 	return conf;
@@ -267,13 +282,9 @@ static char* ngx_http_tcpwrappers_merge_loc_conf(ngx_conf_t* cf, void* parent, v
 	ngx_http_tcpwrappers_conf_t* prev = (ngx_http_tcpwrappers_conf_t*)parent;
 	ngx_http_tcpwrappers_conf_t* conf = (ngx_http_tcpwrappers_conf_t*)child;
 
-	if (NGX_CONF_UNSET == conf->enabled) {
-		conf->enabled = prev->enabled;
-	}
-
-	if (NGX_CONF_UNSET == conf->thorough) {
-		conf->thorough = prev->thorough;
-	}
+	ngx_conf_merge_value(conf->enabled, prev->enabled, 0);
+	ngx_conf_merge_value(conf->thorough, prev->thorough, 0);
+	ngx_conf_merge_str_value(conf->daemon, prev->daemon, NGX_TCPWRAPPERS_DAEMON);
 
 	return NGX_CONF_OK;
 }
