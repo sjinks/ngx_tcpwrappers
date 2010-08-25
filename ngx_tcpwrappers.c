@@ -194,9 +194,9 @@ static ngx_int_t ngx_http_tcpwrappers_handler(ngx_http_request_t* r)
 
 	if (!res) {
 		ngx_http_core_loc_conf_t* clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
-        if (NGX_HTTP_SATISFY_ALL == clcf->satisfy) {
-            ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "access forbidden by tcpwrappers");
-        }
+		if (NGX_HTTP_SATISFY_ALL == clcf->satisfy) {
+			ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "access forbidden by tcpwrappers");
+		}
 
 		return NGX_HTTP_FORBIDDEN;
 	}
