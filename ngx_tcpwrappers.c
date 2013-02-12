@@ -1,8 +1,7 @@
-/*
- * ngx_tcpwrappers.c
- *
- *  Created on: 05.10.2009
- *      Author: Vladimir Kolesnikov <vladimir@extrememember.com>
+/**
+ * @file ngx_tcpwrappers.c
+ * @author Vladimir Kolesnikov <vladimir@free-sevastopol.com>
+ * @date Oct 5, 2009
  */
 
 #include <ngx_http.h>
