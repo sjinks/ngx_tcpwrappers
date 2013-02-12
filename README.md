@@ -2,9 +2,9 @@
 
 TCP Wrapper is a host-based networking ACL system, used to filter network access to Internet Protocol servers on
 Unix-like operating systems such as Linux or BSD. It allows host or subnetwork IP addresses, names and/or ident
-query replies, to be used as tokens on which to filter for access control purposes. Details are (here)[http://linux.die.net/man/5/hosts_access]
+query replies, to be used as tokens on which to filter for access control purposes. Details are [here](http://linux.die.net/man/5/hosts_access).
 
-TCP Wrappers is very convenient to use for anti-worm protection (e.g., in combination with DenyHosts, BlackHosts, fail2ban),
+TCP Wrapper is very convenient to use for anti-worm protection (e.g., in combination with DenyHosts, BlackHosts, fail2ban),
 in particular, to defend against HTTP-based scans.
 
 One of the biggests TCP Wrappers advantages are ACL dynamic configuration (deny rules can be added by the
@@ -43,27 +43,25 @@ sudo make install
 
 Configuration directives:
 
-* tcpwrappers
-* tcpwrappers_daemon
-* tcpwrappers_thorough
-
-Syntax: `tcpwrappers [on|off]`
-Default: `tcpwrappers off`
-Context: http, server, location, limit_except
-Description: allows or disallows the use of TCP Wrappers for the access control.
+* **tcpwrappers**
+  * **Syntax:** `tcpwrappers [on|off]`
+  * **Default:** `tcpwrappers off`
+  * **Context:** http, server, location, limit_except
+  * **Description:** allows or disallows the use of TCP Wrappers for the access control.
 `tcpwrappers off` turns off TCP Wrappers completely; this can be useful to avoid performance penalties.
-
-Syntax: `tcpwrappers_daemon name`
-Default: `tcpwrappers_daemon nginx`
-Context: http, server, location, limit_except
-Description: specifies the name of the daemon used in `/etc/hosts.{allow,deny}` to identify the process.
-
-Syntax: `tcpwrappers_thorough [on|off]`
-Default: `tcpwrappers_thorough off`
-Context: http, server, location, limit_except
-Description: controls thoroughness of the verification.
-
-With `tcpwrappers_thorough off` hosts_ctl(3) is used; access check uses only the IP address.
-
-With `tcpwrappers_thorough on` hosts_access(3) is used; access check uses the IP address, user name (if available),
+* **tcpwrappers_daemon**
+  * **Syntax:** `tcpwrappers_daemon name`
+  * **Default:** `tcpwrappers_daemon nginx`
+  * **Context:** http, server, location, limit_except
+  * **Description:** specifies the name of the daemon used in `/etc/hosts.{allow,deny}` to identify the process.
+* **tcpwrappers_thorough**
+  * **Syntax:** `tcpwrappers_thorough [on|off]`
+  * **Default:** `tcpwrappers_thorough off`
+  * **Context:** http, server, location, limit_except
+  * **Description:** controls thoroughness of the verification.
+With `tcpwrappers_thorough off` [hosts_ctl(3)](http://linux.die.net/man/3/hosts_ctl) is used; access check uses only the IP address.
+With `tcpwrappers_thorough on` [hosts_access(3)](http://linux.die.net/man/3/hosts_access) is used; access check uses the IP address, user name (if available),
 reverse DNS. This check is more thorough but the price is a DNS query to resolve the IP address.
+
+# Further Reading
+* [hosts_access(5) manual](http://linux.die.net/man/5/hosts_access)
