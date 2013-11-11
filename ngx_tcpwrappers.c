@@ -214,7 +214,8 @@ static ngx_int_t ngx_http_tcpwrappers_handler(ngx_http_request_t* r)
 	else {
 		char* client_addr = STRING_UNKNOWN;
 		char addr[NGX_INET6_ADDRSTRLEN+1];
-		size_t len = ngx_sock_ntop(r->connection->sockaddr, addr, NGX_INET6_ADDRSTRLEN, 0);
+		size_t len = ngx_sock_ntop(r->connection->sockaddr, r->connection->socklen, addr, NGX_INET6_ADDRSTRLEN, 0);
+		/*size_t len = ngx_sock_ntop(r->connection->sockaddr, addr, NGX_INET6_ADDRSTRLEN, 0);*/
 
 		if (len) {
 			addr[len]   = '\0';
