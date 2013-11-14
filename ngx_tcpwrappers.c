@@ -1,7 +1,8 @@
-/**
- * @file ngx_tcpwrappers.c
- * @author Vladimir Kolesnikov <vladimir@free-sevastopol.com>
- * @date Oct 5, 2009
+/*
+ * ngx_tcpwrappers.c
+ *
+ *  Created on: 05.10.2009
+ *      Author: Vladimir Kolesnikov <vladimir@extrememember.com>
  */
 
 #include <ngx_http.h>
@@ -21,21 +22,21 @@ static ngx_mutex_t* libwrap_mutex;
 static int orig_allow_severity;
 static int orig_deny_severity;
 static int orig_hosts_access_verbose;
-static char* orig_allow_table;
-static char* orig_deny_table;
+static char* orig_allow_table = NULL;
+static char* orig_deny_table  = NULL;
 
 /**
  * @brief Module configuration structure
  */
 typedef struct {
-	ngx_flag_t enabled;        /**< tcpwrappers */
-	ngx_flag_t thorough;       /**< tcpwrappers_thorough */
-	ngx_str_t daemon;          /**< tcpwrappers_daemon */
-	ngx_uint_t allow_severity; /**< tcpwrappers_allow_severity */
-	ngx_uint_t deny_severity;  /**< tcpwrappers_deny_severity */
-	ngx_flag_t verbose_access; /**< tcpwrappers_verbose */
-	ngx_str_t allow_file;      /**< tcpwrappers_allow_file */
-	ngx_str_t deny_file;       /**< tcpwrappers_deny_file */
+	ngx_flag_t enabled;    /**< tcpwrappers on */
+	ngx_flag_t thorough;   /**< tcpwrappers_thorough on */
+	ngx_str_t daemon;      /**< tcpwrappers_daemon */
+	ngx_uint_t allow_severity;
+	ngx_uint_t deny_severity;
+	ngx_uint_t verbose_access;
+	ngx_str_t allow_file;
+	ngx_str_t deny_file;
 } ngx_http_tcpwrappers_conf_t;
 
 /* Forward declarations */
@@ -58,7 +59,7 @@ static ngx_conf_enum_t severities[] = {
 	{ ngx_string("notice"),  LOG_NOTICE },
 	{ ngx_string("info"),    LOG_INFO },
 	{ ngx_string("debug"),   LOG_DEBUG },
-	{ ngx_null_string,       0 }
+	{ ngx_null_string, 0 }
 };
 
 /**
@@ -108,15 +109,6 @@ static ngx_command_t ngx_http_tcpwrappers_commands[] = {
 		NGX_HTTP_LOC_CONF_OFFSET,
 		offsetof(ngx_http_tcpwrappers_conf_t, deny_severity),
 		&severities
-	},
-
-	{
-		ngx_string("tcpwrappers_verbose"),
-		NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_HTTP_LMT_CONF | NGX_CONF_TAKE1,
-		ngx_conf_set_flag_slot,
-		NGX_HTTP_LOC_CONF_OFFSET,
-		offsetof(ngx_http_tcpwrappers_conf_t, verbose_access),
-		NULL
 	},
 
 	{
@@ -214,11 +206,10 @@ static ngx_int_t ngx_http_tcpwrappers_handler(ngx_http_request_t* r)
 	else {
 		char* client_addr = STRING_UNKNOWN;
 		char addr[NGX_INET6_ADDRSTRLEN+1];
-		size_t len = ngx_sock_ntop(r->connection->sockaddr, r->connection->socklen, addr, NGX_INET6_ADDRSTRLEN, 0);
-		/*size_t len = ngx_sock_ntop(r->connection->sockaddr, addr, NGX_INET6_ADDRSTRLEN, 0);*/
 
-		if (len) {
-			addr[len]   = '\0';
+		if (r->connection->addr_text.len) {
+			memcpy(addr, r->connection->addr_text.data, r->connection->addr_text.len);
+			addr[r->connection->addr_text.len] = 0;
 			client_addr = addr;
 		}
 
@@ -366,11 +357,11 @@ static int my_hosts_ctl(char* daemon, ngx_connection_t* conn, char* client_addr,
 	allow_file = p;
 
 	p = ngx_cpymem(p, config->allow_file.data, config->allow_file.len);
-	*p = '\0';
+	*p = 0;
 	++p;
 	deny_file = p;
 	p = ngx_cpymem(p, config->deny_file.data, config->deny_file.len);
-	*p = '\0';
+	*p = 0;
 
 	ngx_log_debug4(
 		NGX_LOG_DEBUG_HTTP,
@@ -420,11 +411,11 @@ static int my_hosts_access(char* daemon, ngx_connection_t* conn, ngx_http_tcpwra
 	allow_file = p;
 
 	p = ngx_cpymem(p, config->allow_file.data, config->allow_file.len);
-	*p = '\0';
+	*p = 0;
 	++p;
 	deny_file = p;
 	p = ngx_cpymem(p, config->deny_file.data, config->deny_file.len);
-	*p = '\0';
+	*p = 0;
 
 	ngx_log_debug4(
 		NGX_LOG_DEBUG_HTTP,
