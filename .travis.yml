@@ -4,6 +4,10 @@ compiler:
   - gcc
   - clang
 
+install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq libwrap0-dev
+
 script:
   - git clone https://github.com/nginx/nginx nginx
   - cd nginx

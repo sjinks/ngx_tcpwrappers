@@ -1,4 +1,4 @@
-# ngx_tcpwrappers
+# ngx_tcpwrappers [![Build Status](https://travis-ci.org/sjinks/ngx_tcpwrappers.svg?branch=master)](https://travis-ci.org/sjinks/ngx_tcpwrappers)
 
 TCP Wrapper is a host-based networking ACL system, used to filter network access to Internet Protocol servers on
 Unix-like operating systems such as Linux or BSD. It allows host or subnetwork IP addresses, names and/or ident
