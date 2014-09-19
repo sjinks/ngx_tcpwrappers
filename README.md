@@ -16,7 +16,7 @@ It should be noted that TCP Wrappers have several pecularities you should know a
 * the most disappointing thing is that libwrap (library implementing TCP Wrappers functionality) is not a thread safe library.
 In other words, if two threads try to simultaneously use libwrap, the results could be weird.
 This is because libwrap uses non-reentrant functions like `strtok()`, `gethostbyname()`, `gethostbyaddr()` etc.
-If nginx is build with threading support (does it work yet?), use of libwrap can lead to performance penalties
+If nginx is built with threading support (does it work yet?), use of libwrap can lead to performance penalties
 (because access to libwrap functions will have to be serialized). If nginx is configured without threading support
 (this is the default for Linux), everything is OK.
 * dynamic ACL configuration comes at a price: libwrap will read and parse `/etc/hosts.allow` and `/etc/hosts.deny`
