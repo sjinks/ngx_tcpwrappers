@@ -24,7 +24,7 @@ on every request; this may be an issue for high-loaded projects.
 
 # Build
 
-Because nginx does not support dynamic modules, it will have to be rebuild from the source.
+Because nginx does not support dynamic modules, it will have to be rebuilt from the source.
 Assuming that nginx source code is located in `~/nginx` and the source code of ngx_tcpwrappers is in `~/nginx/ngx_tcpwrappers`,
 the build process will be as follows:
 
