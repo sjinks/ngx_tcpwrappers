@@ -22,8 +22,8 @@ static ngx_mutex_t* libwrap_mutex;
 static int orig_allow_severity;
 static int orig_deny_severity;
 static int orig_hosts_access_verbose;
-static char* orig_allow_table = NULL;
-static char* orig_deny_table  = NULL;
+static u_char* orig_allow_table = NULL;
+static u_char* orig_deny_table  = NULL;
 
 /**
  * @brief Module configuration structure
@@ -32,9 +32,9 @@ typedef struct {
 	ngx_flag_t enabled;    /**< tcpwrappers on */
 	ngx_flag_t thorough;   /**< tcpwrappers_thorough on */
 	ngx_str_t daemon;      /**< tcpwrappers_daemon */
-	ngx_uint_t allow_severity;
-	ngx_uint_t deny_severity;
-	ngx_uint_t verbose_access;
+	int allow_severity;
+	int deny_severity;
+	int verbose_access;
 	ngx_str_t allow_file;
 	ngx_str_t deny_file;
 } ngx_http_tcpwrappers_conf_t;
@@ -180,7 +180,7 @@ static ngx_int_t ngx_http_tcpwrappers_handler(ngx_http_request_t* r)
 	ngx_http_tcpwrappers_conf_t* config = ngx_http_get_module_loc_conf(r, ngx_tcpwrappers_module);
 	int res;
 	char* daemon_name;
-	char* p;
+	unsigned char* p;
 
 	if (1 != config->enabled || !config->daemon.len) {
 		return NGX_DECLINED;
@@ -276,8 +276,8 @@ static void* ngx_http_tcpwrappers_create_loc_conf(ngx_conf_t* cf)
 	orig_deny_severity        = deny_severity;
 	resident                  = 1;
 	orig_hosts_access_verbose = hosts_access_verbose;
-	orig_allow_table          = hosts_allow_table;
-	orig_deny_table           = hosts_deny_table;
+	orig_allow_table          = (u_char*)hosts_allow_table;
+	orig_deny_table           = (u_char*)hosts_deny_table;
 
 	if (NULL != conf) {
 		conf->enabled  = NGX_CONF_UNSET;
@@ -320,8 +320,8 @@ static char* ngx_http_tcpwrappers_merge_loc_conf(ngx_conf_t* cf, void* parent, v
 			conf->allow_file.data = prev->allow_file.data;
 		}
 		else {
-			conf->allow_file.len  = strlen(orig_allow_table);
-			conf->allow_file.data = (u_char*)orig_allow_table;
+			conf->allow_file.len  = strlen((char*)orig_allow_table);
+			conf->allow_file.data = orig_allow_table;
 		}
 	}
 
@@ -331,8 +331,8 @@ static char* ngx_http_tcpwrappers_merge_loc_conf(ngx_conf_t* cf, void* parent, v
 			conf->deny_file.data = prev->deny_file.data;
 		}
 		else {
-			conf->deny_file.len  = strlen(orig_deny_table);
-			conf->deny_file.data = (u_char*)orig_deny_table;
+			conf->deny_file.len  = strlen((char*)orig_deny_table);
+			conf->deny_file.data = orig_deny_table;
 		}
 	}
 
@@ -356,11 +356,11 @@ static int my_hosts_ctl(char* daemon, ngx_connection_t* conn, char* client_addr,
 	p = alloca(config->allow_file.len + config->deny_file.len + 2);
 	allow_file = p;
 
-	p = ngx_cpymem(p, config->allow_file.data, config->allow_file.len);
+	p = (char*)ngx_cpymem(p, config->allow_file.data, config->allow_file.len);
 	*p = 0;
 	++p;
 	deny_file = p;
-	p = ngx_cpymem(p, config->deny_file.data, config->deny_file.len);
+	p = (char*)ngx_cpymem(p, config->deny_file.data, config->deny_file.len);
 	*p = 0;
 
 	ngx_log_debug4(
@@ -410,11 +410,11 @@ static int my_hosts_access(char* daemon, ngx_connection_t* conn, ngx_http_tcpwra
 	p = alloca(config->allow_file.len + config->deny_file.len + 2);
 	allow_file = p;
 
-	p = ngx_cpymem(p, config->allow_file.data, config->allow_file.len);
+	p = (char*)ngx_cpymem(p, config->allow_file.data, config->allow_file.len);
 	*p = 0;
 	++p;
 	deny_file = p;
-	p = ngx_cpymem(p, config->deny_file.data, config->deny_file.len);
+	p = (char*)ngx_cpymem(p, config->deny_file.data, config->deny_file.len);
 	*p = 0;
 
 	ngx_log_debug4(
