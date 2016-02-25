@@ -1,4 +1,14 @@
 ngx_addon_name=ngx_tcpwrappers_module
-HTTP_MODULES="$HTTP_MODULES ngx_tcpwrappers_module"
-CORE_LIBS="$CORE_LIBS -lwrap"
-NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/ngx_tcpwrappers.c"
+
+if test -n "$ngx_module_link"; then
+	ngx_module_type=HTTP
+	ngx_module_name=ngx_tcpwrappers_module
+	ngx_module_srcs="$ngx_addon_dir/ngx_tcpwrappers.c"
+	ngx_module_libs=-lwrap
+
+	. auto/module
+else
+	HTTP_MODULES="$HTTP_MODULES ngx_tcpwrappers_module"
+	CORE_LIBS="$CORE_LIBS -lwrap"
+	NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/ngx_tcpwrappers.c"
+fi
