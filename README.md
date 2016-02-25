@@ -39,6 +39,20 @@ make
 sudo make install
 ```
 
+As of [1.9.11](https://www.nginx.com/blog/dynamic-modules-nginx-1-9-11/) nginx supports dynamic modules.
+To build `ngx_tcpwrappers` as a dynamic module, the build procedure will be as follows:
+
+```bash
+cd ~/nginx
+./configure \
+    --conf-path=/etc/nginx/nginx.conf \
+    --error-log-path=/var/log/nginx/error.log \
+    # other parameters passed to ./configure \
+    --add-dynamic-module=./ngx_tcpwrappers/
+make
+sudo make install
+```
+
 # Module Configuration
 
 Configuration directives:
